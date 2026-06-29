@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Weather App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; background-color: #f4f4f9; }
+        .container { max-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 8px; margin: 10px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .result { margin-top: 20px; font-weight: bold; font-size: 1.2em; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Weather Finder</h2>
+        
+        <label for="latitude">Latitude:</label>
+        <input type="number" id="latitude" step="any" value="16.704033">
+
+        <label for="longitude">Longitude:</label>
+        <input type="number" id="longitude" step="any" value="81.646394">
+
+        <button onclick="fetchWeather()">Get Weather</button>
+
+        <div class="result" id="weather-display">
+            </div>
+    </div>
+
+    <script>
+        // We will write the fetch logic here in Step 5!
+        async function fetchWeather() {
+            // 1. Grab the current values typed into the input boxes
+            const lat = document.getElementById('latitude').value;
+            const lon = document.getElementById('longitude').value;
+            const displayDiv = document.getElementById('weather-display');
+
+            // 2. Show a friendly loading message while waiting
+            displayDiv.innerHTML = "Fetching current weather data...";
+
+            try {
+                // 3. Construct our local backend API URL with the coordinates
+                const url = `http://127.0.0.1:8000/api/weather?lat=${lat}&lon=${lon}`;
+
+                // 4. Send the background request to your FastAPI server
+                const response = await fetch(url);
+
+                // 5. Convert the incoming raw response into a readable JavaScript object
+                const data = await response.json();
+
+                // 6. Check if the backend returned an error or if everything is fine
+                if (response.ok) {
+                    // Update the HTML container with a clean format string
+                    displayDiv.innerHTML = ` 
+                        <div style="color: #28a745; margin-bottom: 5px;">☀️ Current Temperature:</div>
+                        <div style="font-size: 1.8em; color: #111;">${data.temperature} °C</div>
+                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">Wind Speed: ${data.wind_speed} km/h</div>
+                    `;
+                } else {
+                    displayDiv.innerHTML = `<span style="color: red;">Error: Unable to fetch data from backend.</span>`;
+                }
+
+            } catch (error) {
+                // This catches network issues (e.g., if your FastAPI server isn't running)
+                console.error("Network Error:", error);
+                displayDiv.innerHTML = `<span style="color: red;">Cannot connect to the backend server. Make sure it's running on port 8000!</span>`;
+            }
+        }
+    </script>
+
+</body>
+</html>
